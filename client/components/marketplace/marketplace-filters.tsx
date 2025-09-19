@@ -138,7 +138,7 @@ export function MarketplaceFilters() {
         <Separator />
 
         {/* AI Matching */}
-        <div className="space-y-3">
+        {/* <div className="space-y-3">
           <h4 className="font-medium">AI Preferences</h4>
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
@@ -160,7 +160,7 @@ export function MarketplaceFilters() {
               </label>
             </div>
           </div>
-        </div>
+        </div> */}
 
         <Button
           className="w-full"
