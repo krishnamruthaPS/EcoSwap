@@ -5,23 +5,19 @@ import { authMiddleware } from "../middleware/auth"
 
 const router = Router()
 
+// GET all items with filters & pagination
 router.get("/", async (req: Request, res: Response) => {
   try {
     const { category, location, condition, page = "1", limit = "12" } = req.query
-    const pageNum = Number.parseInt(page as string)
-    const limitNum = Number.parseInt(limit as string)
+    const pageNum = Number(page)
+    const limitNum = Number(limit)
     const skip = (pageNum - 1) * limitNum
 
-    // Build query filter
     const filter: any = { availabilityStatus: "available" }
-
     if (category) filter.category = category
     if (condition) filter.condition = condition
-    if (location) {
-      filter["location.city"] = { $regex: location, $options: "i" }
-    }
+    if (location) filter["location.city"] = { $regex: location, $options: "i" }
 
-    // Get items with user data
     const items = await Item.find(filter)
       .populate("userId", "username avatarUrl sustainabilityScore")
       .sort({ createdAt: -1 })
@@ -30,7 +26,7 @@ router.get("/", async (req: Request, res: Response) => {
 
     const total = await Item.countDocuments(filter)
 
-    res.json({
+    return res.json({
       items,
       pagination: {
         page: pageNum,
@@ -41,16 +37,16 @@ router.get("/", async (req: Request, res: Response) => {
     })
   } catch (error) {
     console.error("Items fetch error:", error)
-    res.status(500).json({ error: "Failed to fetch items" })
+    return res.status(500).json({ error: "Failed to fetch items" })
   }
 })
 
+// POST create new item
 router.post("/", authMiddleware, async (req: Request, res: Response) => {
   try {
     const itemData = req.body
     const userId = (req as any).user.userId
 
-    // AI classification for the item
     const aiTags = await AIService.classifyItem(itemData.description, itemData.images)
     const sustainabilityImpact = await AIService.calculateSustainabilityImpact(itemData)
 
@@ -73,61 +69,54 @@ router.post("/", authMiddleware, async (req: Request, res: Response) => {
     await item.save()
     await item.populate("userId", "username avatarUrl sustainabilityScore")
 
-    res.status(201).json(item)
+    return res.status(201).json(item)
   } catch (error) {
     console.error("Item creation error:", error)
-    res.status(500).json({ error: "Failed to create item" })
+    return res.status(500).json({ error: "Failed to create item" })
   }
 })
 
+// GET single item by ID
 router.get("/:id", async (req: Request, res: Response) => {
   try {
     const item = await Item.findById(req.params.id).populate("userId", "username avatarUrl sustainabilityScore")
-
-    if (!item) {
-      return res.status(404).json({ error: "Item not found" })
-    }
-
-    res.json(item)
+    if (!item) return res.status(404).json({ error: "Item not found" })
+    return res.json(item)
   } catch (error) {
     console.error("Item fetch error:", error)
-    res.status(500).json({ error: "Failed to fetch item" })
+    return res.status(500).json({ error: "Failed to fetch item" })
   }
 })
 
+// PUT update item by ID
 router.put("/:id", authMiddleware, async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.userId
     const item = await Item.findOne({ _id: req.params.id, userId })
-
-    if (!item) {
-      return res.status(404).json({ error: "Item not found or unauthorized" })
-    }
+    if (!item) return res.status(404).json({ error: "Item not found or unauthorized" })
 
     Object.assign(item, req.body)
     await item.save()
     await item.populate("userId", "username avatarUrl sustainabilityScore")
 
-    res.json(item)
+    return res.json(item)
   } catch (error) {
     console.error("Item update error:", error)
-    res.status(500).json({ error: "Failed to update item" })
+    return res.status(500).json({ error: "Failed to update item" })
   }
 })
 
+// DELETE item by ID
 router.delete("/:id", authMiddleware, async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.userId
     const item = await Item.findOneAndDelete({ _id: req.params.id, userId })
+    if (!item) return res.status(404).json({ error: "Item not found or unauthorized" })
 
-    if (!item) {
-      return res.status(404).json({ error: "Item not found or unauthorized" })
-    }
-
-    res.json({ message: "Item deleted successfully" })
+    return res.json({ message: "Item deleted successfully" })
   } catch (error) {
     console.error("Item deletion error:", error)
-    res.status(500).json({ error: "Failed to delete item" })
+    return res.status(500).json({ error: "Failed to delete item" })
   }
 })
 

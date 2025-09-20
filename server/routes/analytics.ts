@@ -29,7 +29,7 @@ router.get("/dashboard", authMiddleware, async (req: Request, res: Response) => 
 
     // User's sustainability impact
     const user = await User.findById(userId)
-    const sustainabilityScore = user?.sustainabilityScore || 0
+    const sustainabilityScore = user?.sustainability_score || 0
 
     // Recent activity
     const recentSwaps = await Swap.find({
@@ -81,8 +81,8 @@ router.get("/platform", async (req: Request, res: Response) => {
 
     // Top users by sustainability score
     const topUsers = await User.find()
-      .select("username sustainabilityScore totalSwaps")
-      .sort({ sustainabilityScore: -1 })
+      .select("username sustainability_score totalSwaps")
+      .sort({ sustainability_score: -1 })
       .limit(10)
 
     res.json({
@@ -108,7 +108,7 @@ async function getUserSustainabilityRank(userId: string): Promise<number> {
   if (!user) return 0
 
   const rank = await User.countDocuments({
-    sustainabilityScore: { $gt: user.sustainabilityScore },
+    sustainability_score: { $gt: user.sustainability_score },
   })
 
   return rank + 1
@@ -119,12 +119,12 @@ async function getMonthlyGrowthData() {
   sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
 
   const userGrowth = await User.aggregate([
-    { $match: { joinedAt: { $gte: sixMonthsAgo } } },
+    { $match: { joined_at: { $gte: sixMonthsAgo } } },
     {
       $group: {
         _id: {
-          year: { $year: "$joinedAt" },
-          month: { $month: "$joinedAt" },
+          year: { $year: "$joined_at" },
+          month: { $month: "$joined_at" },
         },
         count: { $sum: 1 },
       },

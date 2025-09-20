@@ -4,8 +4,10 @@ import helmet from "helmet"
 import morgan from "morgan"
 import { createServer } from "http"
 import { Server as SocketIOServer } from "socket.io"
-import { connectDatabase } from "./config/database"
+import { connectDB } from "./config/database"
 import { NotificationService } from "./services/NotificationService"
+import userRoutes from "./routes/user" 
+
 
 // Import routes
 import authRoutes from "./routes/auth"
@@ -43,6 +45,7 @@ app.get("/health", (req, res) => {
 
 // API routes
 app.use("/api/auth", authRoutes)
+app.use("/api/user", userRoutes)
 app.use("/api/items", itemRoutes)
 app.use("/api/swaps", swapRoutes)
 app.use("/api/community", communityRoutes)
@@ -85,7 +88,7 @@ const PORT = process.env.PORT || 5000
 // Start server
 const startServer = async () => {
   try {
-    await connectDatabase()
+    await connectDB()
     console.log("Database connected successfully")
 
     server.listen(PORT, () => {
