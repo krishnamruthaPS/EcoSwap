@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -247,7 +246,7 @@ export function SignupForm() {
               <Checkbox
                 id="agreeToTerms"
                 checked={formData.agreeToTerms}
-                onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, agreeToTerms: checked as boolean }))}
+                onCheckedChange={(checked: boolean) => setFormData((prev) => ({ ...prev, agreeToTerms: checked }))}
                 disabled={isLoading}
               />
               <Label htmlFor="agreeToTerms" className="text-sm">
