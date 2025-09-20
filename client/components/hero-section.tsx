@@ -228,10 +228,10 @@ export function HeroSection() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { name: "Kitchen Utensils Set", description: "Sustainable bamboo kitchen tools", image: "/kitchen-utensils-set.png" },
-              { name: "MacBook Pro Laptop", description: "2019 MacBook Pro in great condition", image: "/macbook-pro-laptop.png" },
-              { name: "Coffee Table", description: "Modern wooden coffee table", image: "/modern-coffee-table.png" },
-              { name: "iPad Pro", description: "iPad Pro with Apple Pencil", image: "/ipad-pro-apple-pencil.jpg" }
+              { name: "Onion Shreds", description: "Freshly peeled and shredded onions", image: "/onion-shreds.png" },
+              { name: "Plastic Glass", description: "Disposable transparent plastic glasses", image: "/plastic-glass.png" },
+              { name: "Spoons", description: "Pack of white plastic spoons", image: "/spoons.png" },
+              { name: "Tiles", description: "Assorted broken tiles for reuse", image: "/tiles.png" }
             ].map((item, index) => (
               <Card key={index} className="overflow-hidden hover:shadow-md transition-shadow">
                 <div className="aspect-square bg-muted relative">

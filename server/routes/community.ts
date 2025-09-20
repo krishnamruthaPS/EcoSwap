@@ -1,10 +1,10 @@
 import { Router, type Request, type Response } from "express"
-import { CommunityPost, Comment, Challenge } from "../models/Community"
+import { CommunityPost, Challenge, UserChallenge } from "../models/Community"
 import { authMiddleware } from "../middleware/auth"
 
 const router = Router()
 
-// Posts routes
+// ---------------- Posts routes ----------------
 router.get("/posts", async (req: Request, res: Response) => {
   try {
     const { page = "1", limit = "10", type } = req.query
@@ -13,17 +13,17 @@ router.get("/posts", async (req: Request, res: Response) => {
     const skip = (pageNum - 1) * limitNum
 
     const filter: any = {}
-    if (type) filter.type = type
+    if (type) filter.post_type = type
 
     const posts = await CommunityPost.find(filter)
-      .populate("authorId", "username avatarUrl sustainabilityScore")
-      .sort({ createdAt: -1 })
+      .populate("user_id", "username avatarUrl sustainabilityScore")
+      .sort({ created_at: -1 })
       .skip(skip)
       .limit(limitNum)
 
     const total = await CommunityPost.countDocuments(filter)
 
-    res.json({
+    return res.json({
       posts,
       pagination: {
         page: pageNum,
@@ -34,82 +34,50 @@ router.get("/posts", async (req: Request, res: Response) => {
     })
   } catch (error) {
     console.error("Posts fetch error:", error)
-    res.status(500).json({ error: "Failed to fetch posts" })
+    return res.status(500).json({ error: "Failed to fetch posts" })
   }
 })
 
 router.post("/posts", authMiddleware, async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.userId
-    const { title, content, type, images, tags } = req.body
+    const user_id = (req as any).user.userId
+    const { content, post_type, images, tags } = req.body
 
     const post = new CommunityPost({
-      authorId: userId,
-      title,
+      user_id,
       content,
-      type,
+      post_type,
       images: images || [],
       tags: tags || [],
-      likes: [],
-      comments: [],
+      likes_count: 0,
+      comments_count: 0,
     })
 
     await post.save()
-    await post.populate("authorId", "username avatarUrl sustainabilityScore")
+    await post.populate("user_id", "username avatarUrl sustainabilityScore")
 
-    res.status(201).json(post)
+    return res.status(201).json(post)
   } catch (error) {
     console.error("Post creation error:", error)
-    res.status(500).json({ error: "Failed to create post" })
+    return res.status(500).json({ error: "Failed to create post" })
   }
 })
 
-// Comments routes
-router.post("/posts/:postId/comments", authMiddleware, async (req: Request, res: Response) => {
-  try {
-    const userId = (req as any).user.userId
-    const { content } = req.body
-    const { postId } = req.params
-
-    const comment = new Comment({
-      authorId: userId,
-      postId,
-      content,
-      likes: [],
-    })
-
-    await comment.save()
-    await comment.populate("authorId", "username avatarUrl")
-
-    // Add comment to post
-    await CommunityPost.findByIdAndUpdate(postId, {
-      $push: { comments: comment._id },
-    })
-
-    res.status(201).json(comment)
-  } catch (error) {
-    console.error("Comment creation error:", error)
-    res.status(500).json({ error: "Failed to create comment" })
-  }
-})
-
-// Challenges routes
+// ---------------- Challenges routes ----------------
 router.get("/challenges", async (req: Request, res: Response) => {
   try {
     const { status = "active" } = req.query
-
-    const challenges = await Challenge.find({ status }).sort({ createdAt: -1 })
-
-    res.json(challenges)
+    const challenges = await Challenge.find({ status }).sort({ start_date: -1 })
+    return res.json(challenges)
   } catch (error) {
     console.error("Challenges fetch error:", error)
-    res.status(500).json({ error: "Failed to fetch challenges" })
+    return res.status(500).json({ error: "Failed to fetch challenges" })
   }
 })
 
 router.post("/challenges/:challengeId/join", authMiddleware, async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.userId
+    const user_id = (req as any).user.userId
     const { challengeId } = req.params
 
     const challenge = await Challenge.findById(challengeId)
@@ -117,15 +85,19 @@ router.post("/challenges/:challengeId/join", authMiddleware, async (req: Request
       return res.status(404).json({ error: "Challenge not found" })
     }
 
-    if (!challenge.participants.includes(userId)) {
-      challenge.participants.push(userId)
-      await challenge.save()
-    }
+    // Make sure participants array exists
+    if (!challenge.participants) challenge.participants = []
 
-    res.json({ message: "Successfully joined challenge" })
+    if (!challenge.participants.includes(user_id)) {
+      challenge.participants.push(user_id)
+      await challenge.save()
+      return res.json({ message: "Successfully joined challenge" })
+    } else {
+      return res.status(400).json({ message: "Already joined this challenge" })
+    }
   } catch (error) {
     console.error("Challenge join error:", error)
-    res.status(500).json({ error: "Failed to join challenge" })
+    return res.status(500).json({ error: "Failed to join challenge" })
   }
 })
 
