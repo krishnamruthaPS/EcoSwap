@@ -75,7 +75,7 @@ export function HeroSection() {
           <div className="relative">
             <div className="bg-card rounded-2xl shadow-xl p-6">
               <img
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-zSxQtSomX8jsoe353FDrUWBEcV0hYm.png"
+                src="people_with_books.png"
                 alt="EcoSwap community members exchanging items in a sustainable environment"
                 className="w-full h-auto rounded-lg"
               />
