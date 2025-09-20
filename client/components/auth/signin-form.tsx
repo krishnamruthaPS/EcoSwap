@@ -10,6 +10,8 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Leaf, ArrowRightLeft, Eye, EyeOff, Loader2 } from "lucide-react"
+import { useAuth } from "@/hooks/use-auth"
+import { useRouter } from "next/navigation"
 
 export function SigninForm() {
   const [formData, setFormData] = useState({
@@ -19,6 +21,8 @@ export function SigninForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const { login } = useAuth()
+  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -34,16 +38,14 @@ export function SigninForm() {
         body: JSON.stringify(formData),
       })
 
-      const data = await response.json()
-
-      if (!response.ok) {
+      if (response.ok) {
+        const { token } = await response.json()
+        await login(token)
+        router.push("/marketplace")
+      } else {
+        const data = await response.json()
         throw new Error(data.error || "Sign in failed")
       }
-
-      // Store token and redirect
-      localStorage.setItem("token", data.token)
-      localStorage.setItem("user", JSON.stringify(data.user))
-      window.location.href = "/dashboard"
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred")
     } finally {

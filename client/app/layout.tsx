@@ -5,6 +5,7 @@ import { GeistMono } from "geist/font/mono"
 import { Poppins } from "next/font/google"
 import "./globals.css"
 import { ClientLayout } from "./client-layout"
+import { AuthProvider } from "@/hooks/use-auth"
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -27,7 +28,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} ${poppins.variable}`}>
-        <ClientLayout>{children}</ClientLayout>
+        <AuthProvider>
+          <ClientLayout>{children}</ClientLayout>
+        </AuthProvider>
       </body>
     </html>
   )
