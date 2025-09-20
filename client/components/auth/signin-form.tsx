@@ -36,7 +36,7 @@ export function SigninForm() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          username: formData.username || formData.email, // use username if available, else email
+          email: formData.email,
           password: formData.password,
         }),
       })

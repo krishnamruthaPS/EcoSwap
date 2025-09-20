@@ -40,6 +40,7 @@ export function SignupForm() {
     e.preventDefault()
     setIsLoading(true)
     setError("")
+    console.log("[Signup] Submission started");
 
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords don't match")
@@ -54,8 +55,10 @@ export function SignupForm() {
     }
 
     try {
-      // Log form data for debugging
-      console.log('Submitting signup:', formData);
+      console.log('[Signup] Sending request:', {
+        username: formData.username,
+        password: formData.password,
+      });
       const response = await fetch("http://localhost:5000/api/auth/signup", {
         method: "POST",
         headers: {
@@ -64,23 +67,29 @@ export function SignupForm() {
         body: JSON.stringify({
           username: formData.username,
           password: formData.password,
+          email: formData.email,
+          full_name: formData.fullName,
         }),
       })
-
-      const data = await response.json()
-      console.log('Signup response:', data);
-
-      if (!response.ok) {
-        throw new Error(data.message || "Sign up failed")
+      const text = await response.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        data = { raw: text };
       }
-
-      // Show success message or redirect
+      console.log('[Signup] Response:', data);
+      if (!response.ok) {
+        setError(data.message || data.error || data.raw || "Sign up failed");
+        return;
+      }
       alert("Sign up successful!");
-      // window.location.href = "/onboarding";
     } catch (err) {
+      console.error('[Signup] Error:', err);
       setError(err instanceof Error ? err.message : "An error occurred")
     } finally {
       setIsLoading(false)
+      console.log("[Signup] Submission ended");
     }
   }
 

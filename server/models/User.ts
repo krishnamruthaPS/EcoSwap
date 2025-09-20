@@ -129,6 +129,7 @@ const UserSchema = new Schema<IUser>(
     },
   },
   {
+    collection: "user",
     timestamps: { createdAt: "created_at", updatedAt: "updated_at" },
   },
 )

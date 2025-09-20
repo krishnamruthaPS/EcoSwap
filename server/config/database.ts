@@ -2,7 +2,7 @@ import mongoose from "mongoose"
 
 export const connectDB = async (): Promise<void> => {
   try {
-    const mongoURI = process.env.MONGODB_URI || "mongodb+srv://Krishnamrutha:EABWVdHHnNIx4CG9@ecoswap.ydqp0a1.mongodb.net/?retryWrites=true&w=majority&appName=Ecoswap"
+    const mongoURI = process.env.MONGODB_URI || "mongodb+srv://Krishnamrutha:EABWVdHHnNIx4CG9@ecoswap.ydqp0a1.mongodb.net/EcoSwap?retryWrites=true&w=majority&appName=Ecoswap"
 
     await mongoose.connect(mongoURI, {
       maxPoolSize: 10,
